@@ -13,8 +13,10 @@ public class StringAccumulator {
 	
 	public StringAccumulator() {}
 	
+	public final String[] reservedRegexChars = {"[","\\","^","$",".","|","?","*","+","(",")"};
 	
 	public int add(String numbers) {
+		
 		System.out.println("numbers: "+numbers);
 		int sum = 0;
 		String otherDelim = "//";
@@ -39,26 +41,59 @@ public class StringAccumulator {
 				}		
 			} else {
 				System.out.println("first index of \\n: "+numbers.indexOf("\n"));
-				String newDelim = numbers.substring(2, numbers.indexOf("\n"));
+				String newDelim = numbers.substring(2, numbers.indexOf("\n")); 
 				String newNumbers = numbers.substring((numbers.indexOf("\n")+1), numbers.length());
 				System.out.println("newdelim: "+newDelim);
 				System.out.println("newnumbers: "+newNumbers);
 				List<String> numbs = new ArrayList<String>();
+				List<String> tNumbs = new ArrayList<String>();
+				List<Pattern> allNewDelims = new ArrayList<Pattern>();
+				List<String> tNewDelims = new ArrayList<String>();
 				numbs.add(newNumbers);
-				Object[] temp;
-				Iterator<Pattern> newDelimList = newDelimPat.splitAsStream(newDelim).map(i -> Pattern.compile("\\"+i)).collect(Collectors.toList()).iterator();
 				
-				while(newDelimList.hasNext()) {
-					Pattern tPat = newDelimList.next();
-					System.out.println("tpat: "+tPat);
-					temp = numbs.toArray();
-					numbs.clear();
-					System.out.println("temp: "+temp);
-					System.out.println("numbs: "+numbs);
-					Arrays.stream(temp).map(i -> tPat.splitAsStream(i.toString())).map(k -> numbs.add(k.toString()));
-					System.out.println("numbs after: "+numbs);
-//					newDelimList.next().spli;
+				//Get those one char delimeter which is not reserved
+				newDelimPat.splitAsStream(newDelim).filter(i -> (i.length()==1 && Arrays.binarySearch(reservedRegexChars, i) < 0))
+								.map(i -> Pattern.compile(i)).collect(Collectors.toCollection(() -> allNewDelims));
+				//Get those one char delimeter which is reserved
+				newDelimPat.splitAsStream(newDelim).filter(i -> (i.length()==1 && Arrays.binarySearch(reservedRegexChars, i) >= 0))
+								.map(i -> Pattern.compile("\\"+i)).collect(Collectors.toCollection(() -> allNewDelims));
+				//Get those more than one char delimeter
+				newDelimPat.splitAsStream(newDelim).filter(i -> i.length()>1).collect(Collectors.toCollection(() -> tNewDelims));
+				for(String tNewDelim : tNewDelims) {
+					char[] tNewDelimChars = tNewDelim.toCharArray();
+					StringBuilder tDelim = new StringBuilder();
+					for(int i=0; i<tNewDelimChars.length; i++) {
+						System.out.println(i+": "+tNewDelimChars[i]);
+						String tt = String.valueOf(tNewDelimChars[i]);
+						System.out.println("tt:"+tt);
+						if(Arrays.binarySearch(reservedRegexChars, tt) >= 0) {
+							tDelim.append("\\");
+						}
+						tDelim.append(tNewDelimChars[i]);
+					}
+					System.out.println("tDelim.toString(): "+tDelim.toString());
+					allNewDelims.add(Pattern.compile(tDelim.toString()));
 				}
+				System.out.println("tNewDelims: "+tNewDelims);
+				System.out.println("allNewDelims: "+allNewDelims);
+//				Iterator<Pattern> newDelimList = newDelimPat.splitAsStream(newDelim)
+//															.filter(i -> (i.length()==1 && Arrays.binarySearch(reservedRegexChars, i) < 0))
+//															.map(i -> Pattern.compile(i))
+//															.collect(Collectors.toList())
+//															.iterator();				
+//				while(newDelimList.hasNext()) {					
+//					Pattern tPat = newDelimList.next();
+//					System.out.println("tpat: "+tPat);
+//					System.out.println("numbs: "+numbs);
+//					Arrays.stream(numbs.toArray()).map(i -> tPat.splitAsStream(i.toString())).map(k -> tNumbs.add(k.toString()));
+//					numbs = new ArrayList<String>();
+//					numbs.addAll(tNumbs);
+////					tNumbs.addAll(Arrays.stream(numbs.toArray()).map(i -> tPat.splitAsStream(i.toString())).map(k -> k.toString()).collect(Collectors.toList()));
+////					System.out.println("tNumbs: "+tNumbs);
+//					System.out.println("tNumbs after: "+tNumbs);
+//					System.out.println("numbs after: "+numbs);
+////					newDelimList.next().spli;
+//				}
 				
 //				Arrays.stream(newDelimList.toArray());
 //								 .map(i -> Pattern.compile(i).splitAsStream(newNumbers)
@@ -72,6 +107,12 @@ public class StringAccumulator {
 		}
 		
 		return sum;
+	}
+	
+	private int forPrint(String k) {
+		System.out.println("******* for printing k: "+k);
+		
+		return 0;
 	}
 
 }

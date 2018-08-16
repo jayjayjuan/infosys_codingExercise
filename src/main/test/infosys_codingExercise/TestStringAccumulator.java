@@ -9,7 +9,7 @@ public class TestStringAccumulator {
 	public TestStringAccumulator() {}
 	
 	private StringAccumulator sa = new StringAccumulator();
-	private String toTest = "//***|%\n10\n01***2%3";
+	private String toTest = "//^|***|%\n10\n01***2%3";
 	
 	@Test
 	public void test1(){
